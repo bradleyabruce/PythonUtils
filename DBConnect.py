@@ -2,6 +2,7 @@ import pyodbc
 import pandas as pd
 import Password
 import requests
+import urllib3
 
 # ---------------------- Database Call ----------------------------------
 
@@ -30,25 +31,29 @@ print('Count of Database Passwords: ' + str(len(DatabasePasswords)))
 
 # ------------------------ API Post Call ---------------------------------------
 
+# Suppress unverified https request from self-signed certificate
+urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
+
 URL = 'https://174.101.154.93:1337/api/entryRetrieval'
 PARAMS = {'userid': '9', 'categoryid': '0'}
-r = requests.post(url=URL, data=PARAMS, verify=False)
-data = r.json()
 
-APIPasswords = []
+try:
+    r = requests.post(url=URL, data=PARAMS, verify=False)
+    data = r.json()
 
-for i in range(len(data)):
-    entryid = data[i]['EntryID']
-    userid = '9'
-    websitedomainid = data[i]['WebsiteDomain']
-    websitepasswordid = data[i]['WebsitePassword']
-    categoryid = data[i]['CategoryID']
-    password = Password.Password(entryid, userid, websitedomainid, websitepasswordid, categoryid)
-    APIPasswords.append(password)
+    APIPasswords = []
 
-print('Count of API Passwords: ' + str(len(APIPasswords)))
+    for i in range(len(data)):
+        entryid = data[i]['EntryID']
+        userid = '9'
+        websitedomainid = data[i]['WebsiteDomain']
+        websitepasswordid = data[i]['WebsitePassword']
+        categoryid = data[i]['CategoryID']
+        password = Password.Password(entryid, userid, websitedomainid, websitepasswordid, categoryid)
+        APIPasswords.append(password)
 
+    print('Count of API Passwords: ' + str(len(APIPasswords)))
 
-
-
+except Exception:
+    print('API Error!!!')
 
